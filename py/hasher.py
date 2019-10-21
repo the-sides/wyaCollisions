@@ -1,12 +1,13 @@
 from Crypto.Hash import SHA256 as sha
 from math import ceil
+import pprint as pp
 
 def compByte(b1, b2):
     # Comparing the size of the length of binary bits will already determine the 8-L amount of bits.
     xor = b1 ^ b2
-    print('comparing:  ', b1, b2)
-    print('binary form: {}({}) {}({})'.format(bin(b1), len(bin(b1))-2, bin(b2), len(bin(b2))-2))
-    print('XOR output: ', bin(xor))
+    # print('comparing:  ', b1, b2)
+    # print('binary form: {}({}) {}({})'.format(bin(b1), len(bin(b1))-2, bin(b2), len(bin(b2))-2))
+    # print('XOR output: ', bin(xor))
 
     # bin(byte) will produce the string output of a bits in the notation '0b00110011' 
     #   so the first 2 chars unused. If 2 bytes share a smaller length, then the 
@@ -24,7 +25,7 @@ def compByte(b1, b2):
         else:
             bits = 8 - int(len(bin(xor))-2)
 
-    print('leading bits similar: {}'.format(bits))
+    # print('leading bits similar: {}'.format(bits))
 
     return bits
 
@@ -34,10 +35,13 @@ def compHash(hash1, hash2):
     for i, char1 in enumerate(hash1):
         bits += compByte(char1, hash2[i])
         if (bits % 8 != 0) | (bits == 0):
-            print("bits collided: {}".format(bits))
+            # print("bits collided: {}".format(bits))
             break
         else:
-            print("STILL GOING!")
+            if i == 3:
+                print('we found a duplicate value?')
+            else:
+                print("STILL GOING!")
 
     return bits
 
@@ -54,6 +58,7 @@ def debugCompByte():
 # Once a handful of hashes have been calculated, this is the race that will compare hash outcomes
 def startRace(h):
     collisions = []
+    sameVals = []
     tortInd = 0
     hareInd = 1
     tort = h[tortInd]
@@ -64,18 +69,38 @@ def startRace(h):
         hareInd += 2
         tort = h[tortInd]
         hare = h[hareInd]
+
+        if tort == hare:
+            sameVals.append((tortInd, h[tortInd-1], hareInd, h[hareInd-1]))
+            continue
+        
         if compHash(tort, hare) >= 16:
-            collisions.append(h[tortInd-1])
-            collisions.append(h[hareInd-1])
+            newHash = sha.new(h[tortInd-1])
+            recomputedT = newHash.digest()
+            newHash = sha.new(h[hareInd-1])
+            recomputedH = newHash.digest()
+            pair = ({
+                    'valueT': h[tortInd-1],
+                    'hashedT': h[tortInd],
+                    'computedT': recomputedT
+                },
+                {
+                    'valueH': h[hareInd-1],
+                    'hashedH': h[hareInd],
+                    'computedH': recomputedH
+
+                })
+
+            collisions.append(pair)
             print("Hash collision of 16 MSB bits")
             break
             
-    return collisions
+    return collisions,sameVals
 
 
 hashes = []
 
-hashCount = 2000000
+hashCount = 200000
 bitTarget = 16
 byteTarget = ceil(bitTarget/8)
 print('Hashing {} times', hashCount)
@@ -91,8 +116,14 @@ for i in range(hashCount):
 print("{} hashes computed".format(hashCount))
 print("Looking for collisions...")
 
-collides = startRace(hashes)
+collides, sameVals = startRace(hashes)
 
 print("Finished searching for collisions...")
-print("Found: ", collides)
+print("Found: ")
+for val in collides:
+    pp.pprint(val[0])
+    pp.pprint(val[1])
+
+for same in sameVals:
+    pp.pprint(same)
 
