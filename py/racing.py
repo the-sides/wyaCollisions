@@ -24,7 +24,12 @@ def race(hashCount = 20000000):
         tort = sha(tortVal)
         hare = sha(hareVal)
 
+        # print("hashed {}:{} ".format(tort, hare))
         if tort == hare:
+            if tortVal == hareVal: 
+                # print('cycle found (same val)')
+                continue
+
             if "{}{}".format(tort, hare) in history:
                 print("{}:{} skipped bc of history".format(tort, hare))
                 continue
@@ -32,9 +37,6 @@ def race(hashCount = 20000000):
                 print("{}:{} added to history".format(tort, hare))
                 history.append("{}{}".format(tort, hare))
 
-            if tortVal == hareVal: 
-                print('cycle found (same val)')
-                continue
             count += 1
 
 
