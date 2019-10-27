@@ -1,4 +1,13 @@
+'''  
+Students: Jacob Sides and Ben Hawkin
+Date:     Oct 26th, 2019
+Purpose:  Use Tortoise and Hare algorith for cycle detection to find a collison point 
+            at the start of cycle. The collision will be the value before entering the 
+            cycle and the last element before restarting the cycle. 
+'''
+
 from Crypto.Hash import SHA256 as shaAlg
+import time, datetime
 
 bitsN = 32
 startingValue = b'sideshawkin'
@@ -10,45 +19,50 @@ def sha(val, partial = True):
     else:
         return h.digest()
 
-def race(hashCount = 2000000000):
+def race():
     tortVal = startingValue
     tort = sha(tortVal)
 
     hareVal = tort
     hare = sha(tort)
 
-    for i in range(hashCount):
+    i = 0
+    while tort != hare:
         tortVal = tort
         tort = sha(tortVal)
 
         hareVal = sha(hare)
         hare = sha(hareVal)
+        i += 1
 
-            
-        if tort == hare:
+    # This finds the first collision value for the Tortoise 
+    tort = startingValue
+    while tort != hare:
+        tortVal = tort
+        tort = sha(tortVal)
+        hare = sha(hare)
 
-            # Thanks wikipedia
-            # This finds the first collision value for the Tortise 
-            tort = startingValue
-            while tort != hare:
-                tortVal = tort
-                tort = sha(tortVal)
-                hare = sha(hare)
-
-            # Put the hare one step ahead of tortise to find where the cycle loops back around
-            hare = sha(tort)
-            while tort != hare:
-                hareVal = hare
-                hare = sha(hareVal)
+    # Put the hare one step ahead of tortoise to find where the cycle loops back around
+    hare = sha(tort)
+    while tort != hare:
+        hareVal = hare
+        hare = sha(hareVal)
 
 
-            print("{}) Found tort:{}     hare:{}".format(i, tort, hare))
-            print("    From  val:{}         val:{}".format(tortVal, hareVal))
-            return i, (tortVal, hareVal)
+    print("{}) Hashed tort:{}     hare:{}\n\n".format(i, tort, hare))
+    return i, (tortVal, hareVal)
             
 if __name__ == '__main__':
+    startTime = time.time()
+    print("Race Started:  Time: {}".format(str(datetime.datetime.now())))
+
+    #  Collision Found
     count, collides = race()
-    print("Race Finished: Collisions found for {} bits after {} iterations".format(bitsN, count))
+    endTime = time.time()
+    duration = endTime - startTime
+    endTime = str(datetime.datetime.now()) # for presentation purposes
+
+    print("Race Finished: Time: {}    for {} seconds \n Collisions found for {} bits after {} iterations".format(endTime, duration, bitsN, count))
     
     # for val in collides:
     print("h({}) = {}".format(collides[0], sha(collides[0])))
