@@ -6,8 +6,8 @@ def sha(val):
     h = shaAlg.new(val)
     return h.digest()[:int(bitsN/8)]
 
-def race(hashCount = 20000000):
-    tortVal = b'ssideshawk'
+def race(hashCount = 2000000000):
+    tortVal = b'sideshawkin'
     tort = sha(tortVal)
 
     hareVal = tort
@@ -16,38 +16,41 @@ def race(hashCount = 20000000):
     misses = 0
     count = 0
     collides = 0
-    seenN = 0
-    seen = {}
     history = []
     found = []
     for i in range(hashCount):
         tortVal = tort
-        hareVal = sha(hare)
         tort = sha(tortVal)
+
+        hareVal = sha(hare)
         hare = sha(hareVal)
 
-        if str(hare) in seen.keys():
-            print('leader computed before {} times:{}'.format(hare, seen[str(hare)]))
-            seen[str(hare)] += 1
-        else:
-            print("hashed {}:{} ".format(tort, hare))
-            seen[str(hare)] = 0
-            # seen.append(hare)
             
         if tort == hare:
             count += 1
+
+            # Thanks wikipedia
+            # mu = 0
+            # tort = b'sideshawkin'
+            # while tort != hare:
+            #     tort = sha(tort)
+            #     hare = sha(hare)
+            #     mu += 1
+
             if tortVal == hareVal: 
-                print('cycle found (same val)')
-                print("Misses:{}  count:{} true collides:{}    m/c:{}".format( misses, count, collides, misses/count))
+                # print('cycle found (same val)')
+                # print("Misses:{}  count:{} true collides:{}    m/c:{}".format( misses, count, collides, misses/count))
+                tortVal = tort
+                tort = sha(tortVal)
                 continue
 
-            if "{}{}".format(tort, hare) in history:
-                print("{}:{} skipped bc of history".format(tort, hare))
-                continue
-            else:
-                print("{}:{} added to history".format(tort, hare))
-                history.append("{}{}".format(tort, hare))
-                collides += 1
+            # if "{}{}".format(tort, hare) in history:
+                # print("{}:{} skipped bc of history".format(tort, hare))
+                # continue
+            # else:
+                # print("{}:{} added to history".format(tort, hare))
+                # history.append("{}{}".format(tort, hare))
+                # collides += 1
 
 
             found.append((tortVal, hareVal))
