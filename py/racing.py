@@ -1,23 +1,22 @@
 from Crypto.Hash import SHA256 as shaAlg
 
-bitsN = 16
+bitsN = 32
+startingValue = b'sideshawkin'
 
-def sha(val):
+def sha(val, partial = True):
     h = shaAlg.new(val)
-    return h.digest()[:int(bitsN/8)]
+    if partial:
+        return h.digest()[:int(bitsN/8)]
+    else:
+        return h.digest()
 
 def race(hashCount = 2000000000):
-    tortVal = b'sideshawkin'
+    tortVal = startingValue
     tort = sha(tortVal)
 
     hareVal = tort
     hare = sha(tort)
 
-    misses = 0
-    count = 0
-    collides = 0
-    history = []
-    found = []
     for i in range(hashCount):
         tortVal = tort
         tort = sha(tortVal)
@@ -27,41 +26,35 @@ def race(hashCount = 2000000000):
 
             
         if tort == hare:
-            count += 1
 
             # Thanks wikipedia
-            # mu = 0
-            # tort = b'sideshawkin'
-            # while tort != hare:
-            #     tort = sha(tort)
-            #     hare = sha(hare)
-            #     mu += 1
-
-            if tortVal == hareVal: 
-                # print('cycle found (same val)')
-                # print("Misses:{}  count:{} true collides:{}    m/c:{}".format( misses, count, collides, misses/count))
+            # This finds the first collision value for the Tortise 
+            tort = startingValue
+            while tort != hare:
                 tortVal = tort
                 tort = sha(tortVal)
-                continue
+                hare = sha(hare)
 
-            # if "{}{}".format(tort, hare) in history:
-                # print("{}:{} skipped bc of history".format(tort, hare))
-                # continue
-            # else:
-                # print("{}:{} added to history".format(tort, hare))
-                # history.append("{}{}".format(tort, hare))
-                # collides += 1
+            # Put the hare one step ahead of tortise to find where the cycle loops back around
+            hare = sha(tort)
+            while tort != hare:
+                hareVal = hare
+                hare = sha(hareVal)
 
 
-            found.append((tortVal, hareVal))
-            print("{}) Found tort:{}     hare:{}".format(count, tort, hare))
+            print("{}) Found tort:{}     hare:{}".format(i, tort, hare))
             print("    From  val:{}         val:{}".format(tortVal, hareVal))
-        else:
-            misses += 1
-    return count, collides, misses
+            return i, (tortVal, hareVal)
             
 if __name__ == '__main__':
-    count, collides, misses = race()
-    print("Race Finished")
-    print("Misses:{}  count:{} true collides:{}", misses, count, collides)
+    count, collides = race()
+    print("Race Finished: Collisions found for {} bits after {} iterations".format(bitsN, count))
+    
+    # for val in collides:
+    print("h({}) = {}".format(collides[0], sha(collides[0])))
+    print("h({}) = {}".format(collides[1], sha(collides[1])))
+
+    # for val in collides:
+    print("h({}) = {}".format(collides[0], sha(collides[0], False)))
+    print("h({}) = {}".format(collides[1], sha(collides[1], False)))
 
