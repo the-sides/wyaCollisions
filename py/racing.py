@@ -7,9 +7,17 @@ Purpose:  Use Tortoise and Hare algorith for cycle detection to find a collison 
 '''
 
 from Crypto.Hash import SHA256 as shaAlg
-import time, datetime
+import time, datetime, argparse
 
-bitsN = 32
+parser = argparse.ArgumentParser()
+parser.add_argument('-b', nargs=1, type=int, default=32, help='Bits to match')
+args = parser.parse_args()
+
+try:
+    bitsN = int(args.b[0])
+except:
+    bitsN = args.b
+
 startingValue = b'sideshawkin'
 
 def sha(val, partial = True):
